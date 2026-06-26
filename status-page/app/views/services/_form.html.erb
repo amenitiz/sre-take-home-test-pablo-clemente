@@ -1,0 +1,37 @@
+<%= form_with(model: service, style: "background: white; padding: 24px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);") do |form| %>
+  <% if service.errors.any? %>
+    <div style="background: #f8d7da; color: #721c24; padding: 12px 16px; border-radius: 4px; margin-bottom: 20px;">
+      <h3 style="margin-top: 0;"><%= pluralize(service.errors.count, "error") %> prevented this service from being saved:</h3>
+      <ul>
+        <% service.errors.each do |error| %>
+          <li><%= error.full_message %></li>
+        <% end %>
+      </ul>
+    </div>
+  <% end %>
+
+  <div style="margin-bottom: 16px;">
+    <%= form.label :name, style: "display: block; font-weight: 600; margin-bottom: 4px;" %>
+    <%= form.text_field :name, style: "width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box;" %>
+  </div>
+
+  <div style="margin-bottom: 16px;">
+    <%= form.label :url, "URL", style: "display: block; font-weight: 600; margin-bottom: 4px;" %>
+    <%= form.text_field :url, style: "width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box;" %>
+  </div>
+
+  <div style="margin-bottom: 16px;">
+    <%= form.label :status, style: "display: block; font-weight: 600; margin-bottom: 4px;" %>
+    <%= form.select :status, Service::STATUSES.map { |s| [s.capitalize, s] }, {}, style: "width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px;" %>
+  </div>
+
+  <div style="margin-bottom: 16px;">
+    <%= form.label :description, style: "display: block; font-weight: 600; margin-bottom: 4px;" %>
+    <%= form.text_area :description, rows: 3, style: "width: 100%; padding: 8px; border: 1px solid #ced4da; border-radius: 4px; box-sizing: border-box;" %>
+  </div>
+
+  <div>
+    <%= form.submit style: "background: #007bff; color: white; padding: 8px 24px; border-radius: 4px; border: none; cursor: pointer; font-size: 14px;" %>
+    <%= link_to "Cancel", services_path, style: "color: #6c757d; text-decoration: none; margin-left: 12px;" %>
+  </div>
+<% end %>

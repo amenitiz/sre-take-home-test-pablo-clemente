@@ -1,0 +1,32 @@
+<div style="background: white; padding: 24px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+  <h2 style="margin-top: 0;"><%= @service.name %></h2>
+
+  <table style="width: 100%; border-collapse: collapse;">
+    <tr>
+      <td style="padding: 8px 0; color: #6c757d; width: 120px;">Status</td>
+      <td style="padding: 8px 0;">
+        <span style="background: <%= status_bg(@service.status) %>; color: <%= status_fg(@service.status) %>; padding: 4px 12px; border-radius: 12px; font-size: 13px;">
+          <%= @service.status.capitalize %>
+        </span>
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; color: #6c757d;">URL</td>
+      <td style="padding: 8px 0;"><code><%= @service.url %></code></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; color: #6c757d;">Description</td>
+      <td style="padding: 8px 0;"><%= @service.description || "—" %></td>
+    </tr>
+    <tr>
+      <td style="padding: 8px 0; color: #6c757d;">Last Updated</td>
+      <td style="padding: 8px 0;"><%= @service.updated_at.strftime("%Y-%m-%d %H:%M:%S UTC") %></td>
+    </tr>
+  </table>
+</div>
+
+<div style="margin-top: 20px;">
+  <%= link_to "Edit", edit_service_path(@service), style: "background: #ffc107; color: #333; padding: 8px 16px; border-radius: 4px; text-decoration: none; margin-right: 8px;" %>
+  <%= button_to "Delete", service_path(@service), method: :delete, data: { turbo_confirm: "Are you sure?" }, style: "background: #dc3545; color: white; padding: 8px 16px; border-radius: 4px; border: none; cursor: pointer; font-size: 14px;" %>
+  <%= link_to "Back", services_path, style: "color: #007bff; text-decoration: none; margin-left: 8px;" %>
+</div>

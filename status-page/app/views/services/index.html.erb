@@ -1,0 +1,29 @@
+<% all_operational = @services.all?(&:operational?) %>
+
+<div style="background: <%= all_operational ? '#d4edda' : '#f8d7da' %>; padding: 20px; border-radius: 8px; margin-bottom: 30px; text-align: center;">
+  <h2 style="margin: 0; color: <%= all_operational ? '#155724' : '#721c24' %>;">
+    <%= all_operational ? "All Systems Operational" : "Some Systems Are Experiencing Issues" %>
+  </h2>
+</div>
+
+<div style="margin-bottom: 20px;">
+  <a href="<%= new_service_path %>" style="background: #007bff; color: white; padding: 8px 16px; border-radius: 4px; text-decoration: none;">Add Service</a>
+</div>
+
+<% @services.each do |service| %>
+  <div style="background: white; padding: 16px 20px; border-radius: 6px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+    <div>
+      <a href="<%= service_path(service) %>" style="font-weight: 600; color: #333; text-decoration: none; font-size: 16px;">
+        <%= service.name %>
+      </a>
+      <div style="color: #6c757d; font-size: 13px; margin-top: 2px;"><%= service.url %></div>
+    </div>
+    <span style="background: <%= status_bg(service.status) %>; color: <%= status_fg(service.status) %>; padding: 4px 12px; border-radius: 12px; font-size: 13px; font-weight: 500;">
+      <%= service.status.capitalize %>
+    </span>
+  </div>
+<% end %>
+
+<% if @services.empty? %>
+  <p style="color: #6c757d; text-align: center; padding: 40px;">No services configured yet.</p>
+<% end %>
