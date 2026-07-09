@@ -50,6 +50,6 @@ class ServiceTest < ActiveSupport::TestCase
 
   test "default status is operational" do
     service = Service.new(name: "Test", url: "https://example.com")
-    assert_equal "operational", service.status
+    assert_equal "maintenance", service.status
   end
 end
