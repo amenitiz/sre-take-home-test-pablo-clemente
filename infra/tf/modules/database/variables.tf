@@ -38,12 +38,6 @@ variable "db_security_group_id" {
   type        = string
 }
 
-variable "rails_secret_key_base" {
-  description = "Rails SECRET_KEY_BASE value stored in Secrets Manager."
-  type        = string
-  sensitive   = true
-}
-
 variable "recovery_window_in_days" {
   description = "Secrets Manager recovery window in days."
   type        = number

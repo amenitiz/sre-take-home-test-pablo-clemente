@@ -17,7 +17,6 @@ run "database_contract" {
     db_port                 = 5432
     db_subnet_group_name    = "status-page-challenge-db-subnets"
     db_security_group_id    = "sg-1234567890abcdef0"
-    rails_secret_key_base   = "test-secret-key-base"
     recovery_window_in_days = 0
   }
 
@@ -44,5 +43,10 @@ run "database_contract" {
   assert {
     condition     = output.secret_arn != ""
     error_message = "Secrets Manager ARN must be exposed for the app runtime secret."
+  }
+
+  assert {
+    condition     = random_password.rails_secret_key_base.length == 128
+    error_message = "The database module must generate a non-default Rails SECRET_KEY_BASE."
   }
 }

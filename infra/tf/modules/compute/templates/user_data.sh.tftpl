@@ -75,21 +75,113 @@ UNIT
 systemctl daemon-reload
 systemctl enable --now status-page-smoke.service
 
-%{ if create_instance_profile ~}
 apt-get update
-apt-get install -y docker.io awscli snapd wget
+apt-get install -y ca-certificates curl jq snapd unzip wget
+
+install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+chmod a+r /etc/apt/keyrings/docker.asc
+cat >/etc/apt/sources.list.d/docker.sources <<DOCKER_SOURCE
+Types: deb
+URIs: https://download.docker.com/linux/ubuntu
+Suites: $(. /etc/os-release && echo "$${UBUNTU_CODENAME:-$VERSION_CODENAME}")
+Components: stable
+Architectures: $(dpkg --print-architecture)
+Signed-By: /etc/apt/keyrings/docker.asc
+DOCKER_SOURCE
+
+apt-get update
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+aws_cli_zip="/tmp/awscliv2.zip"
+aws_cli_dir="/tmp/aws"
+rm -rf "$aws_cli_zip" "$aws_cli_dir"
+curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "$aws_cli_zip"
+unzip -q "$aws_cli_zip" -d /tmp
+"$aws_cli_dir/install" --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+rm -rf "$aws_cli_zip" "$aws_cli_dir"
+aws --version
 
 systemctl enable --now docker
 systemctl enable --now snapd.socket
 snap wait system seed.loaded
 
+usermod -aG docker ubuntu
+
+mkdir -p /opt/status-page
+
+cat >/opt/status-page/deploy.sh <<'DEPLOY'
+#!/bin/bash
+set -euo pipefail
+
+if [ "$#" -ne 1 ]; then
+  echo "usage: $0 <container-image>" >&2
+  exit 64
+fi
+
+IMAGE="$1"
+APP_DIR="/opt/status-page"
+ENV_FILE="$APP_DIR/.env"
+SERVICE_ENV_FILE="$APP_DIR/service.env"
+REGION="${aws_region}"
+SECRET_ID="${app_secret_arn}"
+REGISTRY="$${IMAGE%%/*}"
+
+mkdir -p "$APP_DIR"
+
+aws secretsmanager get-secret-value \
+  --secret-id "$SECRET_ID" \
+  --region "$REGION" \
+  --query SecretString \
+  --output text \
+  | jq -r 'to_entries[] | "\(.key)=\(.value | tostring)"' \
+  > "$ENV_FILE"
+
+chmod 600 "$ENV_FILE"
+
+aws ecr get-login-password --region "$REGION" \
+  | docker login --username AWS --password-stdin "$REGISTRY"
+
+docker pull "$IMAGE"
+docker run --rm --env-file "$ENV_FILE" "$IMAGE" bin/rails db:prepare
+
+cat >"$SERVICE_ENV_FILE" <<SERVICE_ENV
+STATUS_PAGE_IMAGE=$IMAGE
+SERVICE_ENV
+
+systemctl stop status-page-smoke.service || true
+systemctl disable status-page-smoke.service || true
+systemctl daemon-reload
+systemctl enable --now status-page.service
+DEPLOY
+
+chmod 750 /opt/status-page/deploy.sh
+
+cat >/etc/systemd/system/status-page.service <<'SERVICE'
+[Unit]
+Description=Status Page Rails container
+After=docker.service network-online.target
+Requires=docker.service
+Wants=network-online.target
+
+[Service]
+EnvironmentFile=/opt/status-page/service.env
+Restart=always
+RestartSec=5
+ExecStartPre=-/usr/bin/docker rm -f status-page
+ExecStart=/usr/bin/docker run --name status-page --env-file /opt/status-page/.env -p 3000:3000 $${STATUS_PAGE_IMAGE}
+ExecStop=/usr/bin/docker stop status-page
+
+[Install]
+WantedBy=multi-user.target
+SERVICE
+
+%{ if create_instance_profile ~}
 if ! snap list amazon-ssm-agent >/dev/null 2>&1; then
   snap install amazon-ssm-agent --classic
 fi
 
 systemctl enable --now snap.amazon-ssm-agent.amazon-ssm-agent.service
-
-usermod -aG docker ubuntu
 
 aws ecr describe-repositories \
   --repository-names "${ecr_repository_name}" \

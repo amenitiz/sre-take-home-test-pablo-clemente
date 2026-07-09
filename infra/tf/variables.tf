@@ -100,6 +100,42 @@ variable "ecr_tagged_image_count_limit" {
   }
 }
 
+variable "github_owner" {
+  description = "GitHub repository owner allowed to assume the AWS deployment role."
+  type        = string
+  default     = "amenitiz"
+}
+
+variable "github_repository" {
+  description = "GitHub repository name allowed to assume the AWS deployment role."
+  type        = string
+  default     = "sre-take-home-test-pablo-clemente"
+}
+
+variable "github_branch" {
+  description = "GitHub branch allowed to assume the AWS deployment role."
+  type        = string
+  default     = "challenge"
+}
+
+variable "github_existing_oidc_provider_arn" {
+  description = "Existing GitHub Actions OIDC provider ARN. Leave null to use the standard provider ARN for this AWS account."
+  type        = string
+  default     = null
+}
+
+variable "github_create_oidc_provider" {
+  description = "Whether Terraform should create the account-global GitHub Actions OIDC provider."
+  type        = bool
+  default     = false
+}
+
+variable "github_oidc_thumbprint_sha" {
+  description = "GitHub Actions OIDC provider root certificate thumbprint used when creating the provider."
+  type        = string
+  default     = "6938fd4d98bab03faadb97b34396831e3780aea1"
+}
+
 variable "ec2_instance_type" {
   description = "EC2 instance type for the Ubuntu smoke-test host."
   type        = string
@@ -123,9 +159,9 @@ variable "ec2_root_volume_size" {
 }
 
 variable "ec2_create_instance_profile" {
-  description = "Whether Terraform should create an EC2 IAM role and instance profile for SSM/ECR access."
+  description = "Whether Terraform should create an EC2 IAM role and instance profile for SSM/ECR/Secrets Manager access."
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "ec2_instance_profile_name" {
@@ -166,13 +202,6 @@ variable "db_allocated_storage" {
     condition     = var.db_allocated_storage >= 20
     error_message = "RDS allocated storage must be at least 20 GiB."
   }
-}
-
-variable "rails_secret_key_base" {
-  description = "Rails SECRET_KEY_BASE stored in Secrets Manager for the production app."
-  type        = string
-  sensitive   = true
-  default     = "replace-me-before-running-the-real-rails-app"
 }
 
 variable "secrets_recovery_window_in_days" {

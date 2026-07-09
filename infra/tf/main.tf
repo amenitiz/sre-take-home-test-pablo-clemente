@@ -1,3 +1,5 @@
+data "aws_caller_identity" "current" {}
+
 module "network" {
   source = "./modules/network"
 
@@ -20,6 +22,22 @@ module "ecr" {
   tagged_image_count_limit   = var.ecr_tagged_image_count_limit
 }
 
+module "github_oidc" {
+  source = "./modules/github_oidc"
+
+  name_prefix                = "${var.project_name}-${var.environment}"
+  aws_region                 = var.aws_region
+  aws_account_id             = data.aws_caller_identity.current.account_id
+  github_owner               = var.github_owner
+  github_repository          = var.github_repository
+  github_branch              = var.github_branch
+  ecr_repository_arn         = module.ecr.repository_arn
+  ec2_instance_arn           = module.compute.instance_arn
+  existing_oidc_provider_arn = var.github_existing_oidc_provider_arn
+  create_oidc_provider       = var.github_create_oidc_provider
+  oidc_thumbprint_sha        = var.github_oidc_thumbprint_sha
+}
+
 module "database" {
   source = "./modules/database"
 
@@ -31,7 +49,6 @@ module "database" {
   db_port                 = var.db_port
   db_subnet_group_name    = module.network.database_subnet_group_name
   db_security_group_id    = module.network.database_security_group_id
-  rails_secret_key_base   = var.rails_secret_key_base
   recovery_window_in_days = var.secrets_recovery_window_in_days
 }
 
@@ -49,6 +66,7 @@ module "compute" {
   root_volume_size              = var.ec2_root_volume_size
   create_instance_profile       = var.ec2_create_instance_profile
   instance_profile_name         = var.ec2_instance_profile_name
+  app_secret_arn                = module.database.secret_arn
   db_probe_host                 = module.database.address
   db_probe_port                 = module.database.port
   enable_cloudwatch_agent       = var.enable_cloudwatch_agent

@@ -4,6 +4,11 @@ resource "random_password" "db" {
   override_special = "!#$%&*()-_=+[]{}<>:?"
 }
 
+resource "random_password" "rails_secret_key_base" {
+  length  = 128
+  special = false
+}
+
 resource "aws_db_instance" "this" {
   identifier = "${var.name_prefix}-postgres"
 
@@ -43,7 +48,7 @@ resource "aws_secretsmanager_secret_version" "app" {
 
   secret_string = jsonencode({
     RAILS_ENV           = "production"
-    SECRET_KEY_BASE     = var.rails_secret_key_base
+    SECRET_KEY_BASE     = random_password.rails_secret_key_base.result
     DATABASE_URL        = "postgres://${var.db_username}:${urlencode(random_password.db.result)}@${aws_db_instance.this.address}:${var.db_port}/${var.db_name}"
     PORT                = "3000"
     RAILS_MAX_THREADS   = "3"
