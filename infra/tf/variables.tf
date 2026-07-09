@@ -204,3 +204,29 @@ variable "enable_https" {
   type        = bool
   default     = true
 }
+
+variable "enable_cloudwatch_agent" {
+  description = "Whether to install and configure the CloudWatch Agent on EC2. Requires an instance profile with CloudWatch permissions."
+  type        = bool
+  default     = false
+}
+
+variable "cloudwatch_log_group_name" {
+  description = "CloudWatch Logs group used by the optional EC2 CloudWatch Agent."
+  type        = string
+  default     = "/status-page/challenge/app"
+}
+
+variable "cloudwatch_log_retention_days" {
+  description = "Retention in days for the optional EC2 CloudWatch log group."
+  type        = number
+  default     = 7
+
+  validation {
+    condition = contains([
+      1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180,
+      365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653,
+    ], var.cloudwatch_log_retention_days)
+    error_message = "CloudWatch log retention must be one of the values supported by AWS CloudWatch Logs."
+  }
+}

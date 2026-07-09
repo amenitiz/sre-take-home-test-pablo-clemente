@@ -142,3 +142,13 @@ output "https_enabled" {
   description = "Whether the ALB HTTPS listener is enabled."
   value       = module.network.https_enabled
 }
+
+output "cloudwatch_agent_enabled" {
+  description = "Whether EC2 CloudWatch Agent log shipping is enabled."
+  value       = module.compute.cloudwatch_agent_enabled
+}
+
+output "cloudwatch_log_group_name" {
+  description = "CloudWatch Logs group used by the optional EC2 CloudWatch Agent."
+  value       = module.compute.cloudwatch_log_group_name
+}

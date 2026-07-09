@@ -8,19 +8,22 @@ run "compute_contract" {
   }
 
   variables {
-    name_prefix             = "status-page-challenge"
-    aws_region              = "eu-west-3"
-    subnet_id               = "subnet-1234567890abcdef0"
-    app_security_group_id   = "sg-1234567890abcdef0"
-    target_group_arn        = "arn:aws:elasticloadbalancing:eu-west-3:123456789012:targetgroup/status-page/1234567890abcdef"
-    ecr_repository_name     = "status-page"
-    app_port                = 3000
-    instance_type           = "t3.micro"
-    root_volume_size        = 8
-    create_instance_profile = false
-    instance_profile_name   = null
-    db_probe_host           = "status-page-db.example.internal"
-    db_probe_port           = 5432
+    name_prefix                   = "status-page-challenge"
+    aws_region                    = "eu-west-3"
+    subnet_id                     = "subnet-1234567890abcdef0"
+    app_security_group_id         = "sg-1234567890abcdef0"
+    target_group_arn              = "arn:aws:elasticloadbalancing:eu-west-3:123456789012:targetgroup/status-page/1234567890abcdef"
+    ecr_repository_name           = "status-page"
+    app_port                      = 3000
+    instance_type                 = "t3.micro"
+    root_volume_size              = 8
+    create_instance_profile       = false
+    instance_profile_name         = null
+    db_probe_host                 = "status-page-db.example.internal"
+    db_probe_port                 = 5432
+    enable_cloudwatch_agent       = false
+    cloudwatch_log_group_name     = "/status-page/challenge/app"
+    cloudwatch_log_retention_days = 7
   }
 
   assert {
@@ -61,5 +64,15 @@ run "compute_contract" {
   assert {
     condition     = output.db_probe_enabled == true
     error_message = "The fallback smoke service must expose a DB network probe when a DB host is provided."
+  }
+
+  assert {
+    condition     = output.cloudwatch_agent_enabled == false
+    error_message = "CloudWatch Agent log shipping must be disabled by default for IAM-restricted sandboxes."
+  }
+
+  assert {
+    condition     = output.cloudwatch_log_group_name == null
+    error_message = "The compute module must not create a CloudWatch log group when CloudWatch Agent is disabled."
   }
 }

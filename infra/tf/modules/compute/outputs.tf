@@ -47,3 +47,13 @@ output "db_probe_enabled" {
   description = "Whether the smoke service has a DB network probe configured."
   value       = var.db_probe_host != null
 }
+
+output "cloudwatch_agent_enabled" {
+  description = "Whether CloudWatch Agent log shipping is enabled."
+  value       = var.create_instance_profile && var.enable_cloudwatch_agent
+}
+
+output "cloudwatch_log_group_name" {
+  description = "CloudWatch Logs group used by the optional CloudWatch Agent."
+  value       = var.enable_cloudwatch_agent ? aws_cloudwatch_log_group.app[0].name : null
+}

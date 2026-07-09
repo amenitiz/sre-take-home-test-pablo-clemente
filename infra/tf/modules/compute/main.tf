@@ -58,11 +58,25 @@ resource "aws_iam_role_policy_attachment" "ecr_read_only" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
+resource "aws_iam_role_policy_attachment" "cloudwatch_agent" {
+  count = var.create_instance_profile && var.enable_cloudwatch_agent ? 1 : 0
+
+  role       = aws_iam_role.this[0].name
+  policy_arn = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+}
+
 resource "aws_iam_instance_profile" "this" {
   count = var.create_instance_profile ? 1 : 0
 
   name = "${var.name_prefix}-ec2-profile"
   role = aws_iam_role.this[0].name
+}
+
+resource "aws_cloudwatch_log_group" "app" {
+  count = var.enable_cloudwatch_agent ? 1 : 0
+
+  name              = var.cloudwatch_log_group_name
+  retention_in_days = var.cloudwatch_log_retention_days
 }
 
 resource "aws_instance" "this" {
@@ -75,12 +89,14 @@ resource "aws_instance" "this" {
   user_data_replace_on_change = true
 
   user_data = templatefile("${path.module}/templates/user_data.sh.tftpl", {
-    app_port                = var.app_port
-    aws_region              = var.aws_region
-    ecr_repository_name     = var.ecr_repository_name
-    create_instance_profile = var.create_instance_profile
-    db_probe_host           = var.db_probe_host
-    db_probe_port           = var.db_probe_port
+    app_port                  = var.app_port
+    aws_region                = var.aws_region
+    ecr_repository_name       = var.ecr_repository_name
+    create_instance_profile   = var.create_instance_profile
+    db_probe_host             = var.db_probe_host
+    db_probe_port             = var.db_probe_port
+    enable_cloudwatch_agent   = var.create_instance_profile && var.enable_cloudwatch_agent
+    cloudwatch_log_group_name = var.cloudwatch_log_group_name
   })
 
   root_block_device {

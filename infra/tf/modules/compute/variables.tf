@@ -65,3 +65,26 @@ variable "db_probe_port" {
   type        = number
   default     = 5432
 }
+
+variable "enable_cloudwatch_agent" {
+  description = "Whether to install and configure the CloudWatch Agent. Requires create_instance_profile to be true."
+  type        = bool
+}
+
+variable "cloudwatch_log_group_name" {
+  description = "CloudWatch Logs group used by the optional CloudWatch Agent."
+  type        = string
+}
+
+variable "cloudwatch_log_retention_days" {
+  description = "Retention in days for the optional CloudWatch log group."
+  type        = number
+
+  validation {
+    condition = contains([
+      1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180,
+      365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653,
+    ], var.cloudwatch_log_retention_days)
+    error_message = "CloudWatch log retention must be one of the values supported by AWS CloudWatch Logs."
+  }
+}
