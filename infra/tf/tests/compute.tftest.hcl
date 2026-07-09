@@ -19,6 +19,8 @@ run "compute_contract" {
     root_volume_size        = 8
     create_instance_profile = false
     instance_profile_name   = null
+    db_probe_host           = "status-page-db.example.internal"
+    db_probe_port           = 5432
   }
 
   assert {
@@ -54,5 +56,10 @@ run "compute_contract" {
   assert {
     condition     = output.runs_instance_profile_bootstrap == false
     error_message = "The fallback smoke-test path must skip SSM/ECR bootstrap when no instance profile is attached."
+  }
+
+  assert {
+    condition     = output.db_probe_enabled == true
+    error_message = "The fallback smoke service must expose a DB network probe when a DB host is provided."
   }
 }

@@ -79,6 +79,8 @@ resource "aws_instance" "this" {
     aws_region              = var.aws_region
     ecr_repository_name     = var.ecr_repository_name
     create_instance_profile = var.create_instance_profile
+    db_probe_host           = var.db_probe_host
+    db_probe_port           = var.db_probe_port
   })
 
   root_block_device {

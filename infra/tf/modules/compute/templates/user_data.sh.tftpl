@@ -5,6 +5,11 @@ export DEBIAN_FRONTEND=noninteractive
 
 cat >/usr/local/bin/status-page-smoke.py <<'PY'
 from http.server import BaseHTTPRequestHandler, HTTPServer
+import socket
+
+
+DB_HOST = ${jsonencode(db_probe_host)}
+DB_PORT = ${db_probe_port}
 
 
 class Handler(BaseHTTPRequestHandler):
@@ -15,6 +20,29 @@ class Handler(BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(b'{"status":"ok"}')
             return
+
+        if self.path == "/db-healthz":
+            if DB_HOST is None:
+                self.send_response(503)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(b'{"status":"not_configured"}')
+                return
+
+            try:
+                with socket.create_connection((DB_HOST, DB_PORT), timeout=3):
+                    pass
+                self.send_response(200)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(b'{"status":"ok"}')
+                return
+            except OSError:
+                self.send_response(503)
+                self.send_header("Content-Type", "application/json")
+                self.end_headers()
+                self.wfile.write(b'{"status":"unreachable"}')
+                return
 
         self.send_response(200)
         self.send_header("Content-Type", "text/plain")

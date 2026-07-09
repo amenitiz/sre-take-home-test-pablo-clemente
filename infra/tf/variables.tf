@@ -133,3 +133,50 @@ variable "ec2_instance_profile_name" {
   type        = string
   default     = null
 }
+
+variable "db_name" {
+  description = "PostgreSQL database name for the Rails production app."
+  type        = string
+  default     = "status_page_production"
+}
+
+variable "db_username" {
+  description = "PostgreSQL master username for the Rails production app."
+  type        = string
+  default     = "status_page"
+}
+
+variable "db_instance_class" {
+  description = "RDS PostgreSQL instance class."
+  type        = string
+  default     = "db.t3.micro"
+
+  validation {
+    condition     = can(regex("^db\\.t3\\.|^db\\.t4g\\.", var.db_instance_class))
+    error_message = "The challenge allows RDS db.t3 or db.t4g instance families only."
+  }
+}
+
+variable "db_allocated_storage" {
+  description = "Allocated RDS storage in GiB."
+  type        = number
+  default     = 20
+
+  validation {
+    condition     = var.db_allocated_storage >= 20
+    error_message = "RDS allocated storage must be at least 20 GiB."
+  }
+}
+
+variable "rails_secret_key_base" {
+  description = "Rails SECRET_KEY_BASE stored in Secrets Manager for the production app."
+  type        = string
+  sensitive   = true
+  default     = "replace-me-before-running-the-real-rails-app"
+}
+
+variable "secrets_recovery_window_in_days" {
+  description = "Secrets Manager recovery window in days. Zero allows immediate deletion for the disposable challenge environment."
+  type        = number
+  default     = 0
+}

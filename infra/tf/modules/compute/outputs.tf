@@ -42,3 +42,8 @@ output "runs_instance_profile_bootstrap" {
   description = "Whether user data runs SSM/ECR bootstrap that requires an instance profile."
   value       = var.create_instance_profile
 }
+
+output "db_probe_enabled" {
+  description = "Whether the smoke service has a DB network probe configured."
+  value       = var.db_probe_host != null
+}

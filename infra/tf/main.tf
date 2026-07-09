@@ -18,6 +18,21 @@ module "ecr" {
   tagged_image_count_limit   = var.ecr_tagged_image_count_limit
 }
 
+module "database" {
+  source = "./modules/database"
+
+  name_prefix             = "${var.project_name}-${var.environment}"
+  db_name                 = var.db_name
+  db_username             = var.db_username
+  db_instance_class       = var.db_instance_class
+  db_allocated_storage    = var.db_allocated_storage
+  db_port                 = var.db_port
+  db_subnet_group_name    = module.network.database_subnet_group_name
+  db_security_group_id    = module.network.database_security_group_id
+  rails_secret_key_base   = var.rails_secret_key_base
+  recovery_window_in_days = var.secrets_recovery_window_in_days
+}
+
 module "compute" {
   source = "./modules/compute"
 
@@ -32,4 +47,6 @@ module "compute" {
   root_volume_size        = var.ec2_root_volume_size
   create_instance_profile = var.ec2_create_instance_profile
   instance_profile_name   = var.ec2_instance_profile_name
+  db_probe_host           = module.database.address
+  db_probe_port           = module.database.port
 }

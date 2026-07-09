@@ -102,3 +102,18 @@ output "ec2_created_instance_profile" {
   description = "Whether Terraform created the EC2 IAM role and instance profile."
   value       = module.compute.created_instance_profile
 }
+
+output "rds_endpoint" {
+  description = "RDS PostgreSQL endpoint address."
+  value       = module.database.address
+}
+
+output "rds_port" {
+  description = "RDS PostgreSQL port."
+  value       = module.database.port
+}
+
+output "app_secret_arn" {
+  description = "Secrets Manager ARN containing Rails production runtime configuration."
+  value       = module.database.secret_arn
+}

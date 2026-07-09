@@ -53,3 +53,15 @@ variable "instance_profile_name" {
   type        = string
   default     = null
 }
+
+variable "db_probe_host" {
+  description = "Database host used by the smoke service DB network probe."
+  type        = string
+  default     = null
+}
+
+variable "db_probe_port" {
+  description = "Database port used by the smoke service DB network probe."
+  type        = number
+  default     = 5432
+}
