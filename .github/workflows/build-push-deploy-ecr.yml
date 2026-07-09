@@ -70,11 +70,14 @@ jobs:
             exit 1
           fi
 
+          SSM_PARAMETERS="$(jq -n --arg command "/opt/status-page/deploy.sh ${IMAGE_URI}" \
+            '{commands: [$command]}')"
+
           COMMAND_ID="$(aws ssm send-command \
             --instance-ids "$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
             --comment "Deploy ${IMAGE_URI}" \
-            --parameters commands="/opt/status-page/deploy.sh '${IMAGE_URI}'" \
+            --parameters "$SSM_PARAMETERS" \
             --query 'Command.CommandId' \
             --output text)"
 
