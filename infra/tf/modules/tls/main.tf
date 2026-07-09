@@ -22,6 +22,11 @@ resource "terraform_data" "cloudflare_validation_record" {
     ttl     = var.dns_ttl
   }
 
+  # We're using a local-exec provisioner instead of a data source because we need to
+  # use the Cloudflare API to create the validation record.
+  # The data source would not be able to do this because it is not a native Terraform
+  # provider
+
   provisioner "local-exec" {
     interpreter = ["/bin/bash", "-c"]
     command     = <<-EOT
