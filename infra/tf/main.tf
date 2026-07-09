@@ -1,13 +1,15 @@
 module "network" {
   source = "./modules/network"
 
-  project_name       = var.project_name
-  environment        = var.environment
-  vpc_cidr           = var.vpc_cidr
-  availability_zones = var.availability_zones
-  allowed_alb_cidrs  = var.allowed_alb_cidrs
-  app_port           = var.app_port
-  db_port            = var.db_port
+  project_name          = var.project_name
+  environment           = var.environment
+  vpc_cidr              = var.vpc_cidr
+  availability_zones    = var.availability_zones
+  allowed_alb_cidrs     = var.allowed_alb_cidrs
+  app_port              = var.app_port
+  db_port               = var.db_port
+  enable_https          = var.enable_https
+  https_certificate_arn = module.tls.certificate_arn
 }
 
 module "ecr" {
@@ -49,4 +51,22 @@ module "compute" {
   instance_profile_name   = var.ec2_instance_profile_name
   db_probe_host           = module.database.address
   db_probe_port           = module.database.port
+}
+
+module "dns" {
+  source = "./modules/dns"
+
+  zone_name    = var.cloudflare_zone_name
+  record_name  = var.cloudflare_record_name
+  record_type  = "CNAME"
+  record_value = module.network.alb_dns_name
+  proxied      = var.cloudflare_record_proxied
+}
+
+module "tls" {
+  source = "./modules/tls"
+
+  zone_name = var.cloudflare_zone_name
+  hostname  = "${var.cloudflare_record_name}.${var.cloudflare_zone_name}"
+  dns_ttl   = 1
 }

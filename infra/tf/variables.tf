@@ -180,3 +180,27 @@ variable "secrets_recovery_window_in_days" {
   type        = number
   default     = 0
 }
+
+variable "cloudflare_zone_name" {
+  description = "Cloudflare DNS zone name."
+  type        = string
+  default     = "amenitiz-qa-1.ovh"
+}
+
+variable "cloudflare_record_name" {
+  description = "Cloudflare DNS record name for the status page."
+  type        = string
+  default     = "status-page"
+}
+
+variable "cloudflare_record_proxied" {
+  description = "Whether Cloudflare should proxy traffic for the status page record."
+  type        = bool
+  default     = false
+}
+
+variable "enable_https" {
+  description = "Whether to create ALB HTTPS listener and redirect HTTP to HTTPS."
+  type        = bool
+  default     = true
+}

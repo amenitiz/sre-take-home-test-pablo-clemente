@@ -117,3 +117,28 @@ output "app_secret_arn" {
   description = "Secrets Manager ARN containing Rails production runtime configuration."
   value       = module.database.secret_arn
 }
+
+output "cloudflare_hostname" {
+  description = "Public hostname managed in Cloudflare."
+  value       = module.dns.hostname
+}
+
+output "public_url" {
+  description = "Public HTTP URL for the status page."
+  value       = module.dns.public_url
+}
+
+output "https_url" {
+  description = "Public HTTPS URL for the status page."
+  value       = module.tls.https_url
+}
+
+output "acm_certificate_arn" {
+  description = "ACM certificate ARN used by the ALB HTTPS listener."
+  value       = module.tls.certificate_arn
+}
+
+output "https_enabled" {
+  description = "Whether the ALB HTTPS listener is enabled."
+  value       = module.network.https_enabled
+}

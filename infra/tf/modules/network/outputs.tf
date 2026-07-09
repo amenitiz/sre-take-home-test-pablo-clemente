@@ -47,3 +47,8 @@ output "app_target_group_arn" {
   description = "ARN of the app target group for future EC2 attachment."
   value       = aws_lb_target_group.app.arn
 }
+
+output "https_enabled" {
+  description = "Whether the ALB HTTPS listener is enabled."
+  value       = var.enable_https
+}

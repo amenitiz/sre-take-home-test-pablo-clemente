@@ -32,3 +32,14 @@ variable "db_port" {
   description = "PostgreSQL port exposed by RDS to the EC2 instance."
   type        = number
 }
+
+variable "enable_https" {
+  description = "Whether to create an ALB HTTPS listener and redirect HTTP to HTTPS."
+  type        = bool
+}
+
+variable "https_certificate_arn" {
+  description = "ACM certificate ARN for the ALB HTTPS listener."
+  type        = string
+  default     = null
+}
