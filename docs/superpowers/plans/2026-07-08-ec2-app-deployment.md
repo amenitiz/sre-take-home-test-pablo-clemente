@@ -4,7 +4,7 @@
 
 **Goal:** Replace the temporary smoke server with the real Rails status page container on EC2.
 
-**Architecture:** EC2 runs a systemd-managed Docker container behind the ALB. The instance profile allows SSM, ECR reads, and Secrets Manager reads. User-data installs Docker and AWS CLI through official upstream installation paths, writes `/opt/status-page/deploy.sh`, and keeps the temporary smoke service available until the first real app deployment.
+**Architecture:** EC2 runs a systemd-managed Docker container behind the ALB. The instance profile allows SSM, ECR reads, and Secrets Manager reads. User-data installs Docker and AWS CLI through official upstream installation paths, writes `/opt/status-page/deploy.sh`, and writes the production `status-page.service`. The earlier temporary smoke service was removed after the ECR/OIDC/SSM deployment path was proven.
 
 **Tech Stack:** Terraform, EC2 user-data, Docker, systemd, Rails container, RDS PostgreSQL, Secrets Manager optional runtime path, GitHub Actions optional deploy path.
 
@@ -126,7 +126,7 @@ Assert:
 output.app_image == "ghcr.io/example/status-page:abc123"
 ```
 
-- [ ] **Step 2: Assert smoke server is no longer the app path**
+- [x] **Step 2: Assert smoke server is no longer the app path**
 
 Remove or replace assertions that only validate the temporary smoke server.
 

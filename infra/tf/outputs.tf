@@ -94,17 +94,17 @@ output "github_actions_oidc_subject" {
 }
 
 output "ec2_instance_id" {
-  description = "ID of the Ubuntu EC2 smoke-test instance."
+  description = "ID of the Ubuntu EC2 app instance."
   value       = module.compute.instance_id
 }
 
 output "ec2_public_ip" {
-  description = "Public IP address of the Ubuntu EC2 smoke-test instance."
+  description = "Public IP address of the Ubuntu EC2 app instance."
   value       = module.compute.public_ip
 }
 
 output "ec2_instance_profile_name" {
-  description = "IAM instance profile attached to the Ubuntu EC2 smoke-test instance."
+  description = "IAM instance profile attached to the Ubuntu EC2 app instance."
   value       = module.compute.instance_profile_name
 }
 

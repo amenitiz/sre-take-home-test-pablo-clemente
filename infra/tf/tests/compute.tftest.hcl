@@ -20,8 +20,6 @@ run "compute_contract" {
     create_instance_profile       = false
     instance_profile_name         = null
     app_secret_arn                = null
-    db_probe_host                 = "status-page-db.example.internal"
-    db_probe_port                 = 5432
     enable_cloudwatch_agent       = false
     cloudwatch_log_group_name     = "/status-page/challenge/app"
     cloudwatch_log_retention_days = 7
@@ -29,12 +27,12 @@ run "compute_contract" {
 
   assert {
     condition     = output.instance_type == "t3.micro"
-    error_message = "The smoke-test EC2 instance must use the low-cost t3.micro type."
+    error_message = "The EC2 app instance must use the low-cost t3.micro type."
   }
 
   assert {
     condition     = output.app_port == 3000
-    error_message = "The EC2 smoke service must listen on the Rails app port 3000."
+    error_message = "The EC2 app service must listen on the Rails app port 3000."
   }
 
   assert {
@@ -59,7 +57,7 @@ run "compute_contract" {
 
   assert {
     condition     = output.runs_instance_profile_bootstrap == false
-    error_message = "The fallback smoke-test path must skip SSM/ECR bootstrap when no instance profile is attached."
+    error_message = "The no-profile path must skip SSM/ECR bootstrap when no instance profile is attached."
   }
 
   assert {
@@ -88,8 +86,8 @@ run "compute_contract" {
   }
 
   assert {
-    condition     = output.db_probe_enabled == true
-    error_message = "The fallback smoke service must expose a DB network probe when a DB host is provided."
+    condition     = output.writes_temporary_smoke_service == false
+    error_message = "The EC2 bootstrap must not write the temporary smoke service once the real app deploy path works."
   }
 
   assert {
@@ -123,8 +121,6 @@ run "compute_profile_contract" {
     create_instance_profile       = true
     instance_profile_name         = null
     app_secret_arn                = "arn:aws:secretsmanager:eu-west-3:123456789012:secret:status-page-challenge/app-env-abc123"
-    db_probe_host                 = "status-page-db.example.internal"
-    db_probe_port                 = 5432
     enable_cloudwatch_agent       = false
     cloudwatch_log_group_name     = "/status-page/challenge/app"
     cloudwatch_log_retention_days = 7

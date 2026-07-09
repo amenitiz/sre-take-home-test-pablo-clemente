@@ -4,7 +4,7 @@ variable "name_prefix" {
 }
 
 variable "aws_region" {
-  description = "AWS region used by the smoke-test bootstrap."
+  description = "AWS region used by the EC2 bootstrap."
   type        = string
 }
 
@@ -24,17 +24,17 @@ variable "target_group_arn" {
 }
 
 variable "ecr_repository_name" {
-  description = "ECR repository name used by the smoke-test bootstrap."
+  description = "ECR repository name used by the EC2 bootstrap."
   type        = string
 }
 
 variable "app_port" {
-  description = "Application port exposed by the smoke-test service."
+  description = "Application port exposed by the Rails container."
   type        = number
 }
 
 variable "instance_type" {
-  description = "EC2 instance type for the Ubuntu smoke-test host."
+  description = "EC2 instance type for the Ubuntu app host."
   type        = string
 }
 
@@ -58,18 +58,6 @@ variable "app_secret_arn" {
   description = "Secrets Manager ARN containing the Rails production runtime environment."
   type        = string
   default     = null
-}
-
-variable "db_probe_host" {
-  description = "Database host used by the smoke service DB network probe."
-  type        = string
-  default     = null
-}
-
-variable "db_probe_port" {
-  description = "Database port used by the smoke service DB network probe."
-  type        = number
-  default     = 5432
 }
 
 variable "enable_cloudwatch_agent" {

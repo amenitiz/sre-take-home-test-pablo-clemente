@@ -137,7 +137,7 @@ variable "github_oidc_thumbprint_sha" {
 }
 
 variable "ec2_instance_type" {
-  description = "EC2 instance type for the Ubuntu smoke-test host."
+  description = "EC2 instance type for the Ubuntu app host."
   type        = string
   default     = "t3.micro"
 
@@ -148,7 +148,7 @@ variable "ec2_instance_type" {
 }
 
 variable "ec2_root_volume_size" {
-  description = "Root EBS volume size in GiB for the Ubuntu smoke-test host."
+  description = "Root EBS volume size in GiB for the Ubuntu app host."
   type        = number
   default     = 8
 

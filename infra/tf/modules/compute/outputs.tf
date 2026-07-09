@@ -1,5 +1,5 @@
 output "instance_id" {
-  description = "ID of the Ubuntu EC2 smoke-test instance."
+  description = "ID of the Ubuntu EC2 app instance."
   value       = aws_instance.this.id
 }
 
@@ -9,17 +9,17 @@ output "instance_arn" {
 }
 
 output "public_ip" {
-  description = "Public IP address of the Ubuntu EC2 smoke-test instance."
+  description = "Public IP address of the Ubuntu EC2 app instance."
   value       = aws_instance.this.public_ip
 }
 
 output "instance_type" {
-  description = "EC2 instance type used by the smoke-test host."
+  description = "EC2 instance type used by the app host."
   value       = aws_instance.this.instance_type
 }
 
 output "app_port" {
-  description = "Application port used by the smoke-test service and ALB target group attachment."
+  description = "Application port used by the Rails service and ALB target group attachment."
   value       = var.app_port
 }
 
@@ -78,9 +78,9 @@ output "app_secret_access_enabled" {
   value       = var.create_instance_profile
 }
 
-output "db_probe_enabled" {
-  description = "Whether the smoke service has a DB network probe configured."
-  value       = var.db_probe_host != null
+output "writes_temporary_smoke_service" {
+  description = "Whether user data writes the temporary smoke service."
+  value       = false
 }
 
 output "cloudwatch_agent_enabled" {

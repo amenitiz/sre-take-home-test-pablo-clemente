@@ -67,8 +67,6 @@ module "compute" {
   create_instance_profile       = var.ec2_create_instance_profile
   instance_profile_name         = var.ec2_instance_profile_name
   app_secret_arn                = module.database.secret_arn
-  db_probe_host                 = module.database.address
-  db_probe_port                 = module.database.port
   enable_cloudwatch_agent       = var.enable_cloudwatch_agent
   cloudwatch_log_group_name     = var.cloudwatch_log_group_name
   cloudwatch_log_retention_days = var.cloudwatch_log_retention_days

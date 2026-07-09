@@ -114,8 +114,6 @@ resource "aws_instance" "this" {
     ecr_repository_name       = var.ecr_repository_name
     create_instance_profile   = var.create_instance_profile
     app_secret_arn            = var.app_secret_arn == null ? "" : var.app_secret_arn
-    db_probe_host             = var.db_probe_host
-    db_probe_port             = var.db_probe_port
     enable_cloudwatch_agent   = var.create_instance_profile && var.enable_cloudwatch_agent
     cloudwatch_log_group_name = var.cloudwatch_log_group_name
   })
