@@ -62,7 +62,7 @@ jobs:
             --filters \
               "Name=tag:Name,Values=${EC2_NAME}" \
               "Name=instance-state-name,Values=running" \
-            --query 'Reservations[0].Instances[0].InstanceId' \
+            --query 'sort_by(Reservations[].Instances[], &LaunchTime)[-1].InstanceId' \
             --output text)"
 
           if [[ -z "$INSTANCE_ID" || "$INSTANCE_ID" == "None" ]]; then
