@@ -76,7 +76,7 @@ jobs:
           COMMAND_ID="$(aws ssm send-command \
             --instance-ids "$INSTANCE_ID" \
             --document-name "AWS-RunShellScript" \
-            --comment "Deploy ${IMAGE_URI}" \
+            --comment "Deploy ${GITHUB_SHA}" \
             --parameters "$SSM_PARAMETERS" \
             --query 'Command.CommandId' \
             --output text)"
