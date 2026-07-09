@@ -1,0 +1,94 @@
+output "instance_id" {
+  description = "ID of the Ubuntu EC2 app instance."
+  value       = aws_instance.this.id
+}
+
+output "instance_arn" {
+  description = "ARN of the Ubuntu EC2 instance."
+  value       = aws_instance.this.arn
+}
+
+output "public_ip" {
+  description = "Public IP address of the Ubuntu EC2 app instance."
+  value       = aws_instance.this.public_ip
+}
+
+output "instance_type" {
+  description = "EC2 instance type used by the app host."
+  value       = aws_instance.this.instance_type
+}
+
+output "app_port" {
+  description = "Application port used by the Rails service and ALB target group attachment."
+  value       = var.app_port
+}
+
+output "ubuntu_ami_owner" {
+  description = "Canonical AWS account ID used for the Ubuntu AMI lookup."
+  value       = local.ubuntu_ami_owner
+}
+
+output "ssh_key_configured" {
+  description = "Whether SSH key access is configured for the instance."
+  value       = false
+}
+
+output "instance_profile_name" {
+  description = "IAM instance profile attached to the EC2 instance."
+  value       = var.create_instance_profile ? aws_iam_instance_profile.this[0].name : var.instance_profile_name
+}
+
+output "created_instance_profile" {
+  description = "Whether this module created an EC2 IAM role and instance profile."
+  value       = var.create_instance_profile
+}
+
+output "runs_instance_profile_bootstrap" {
+  description = "Whether user data runs SSM/ECR bootstrap that requires an instance profile."
+  value       = var.create_instance_profile
+}
+
+output "runs_package_bootstrap" {
+  description = "Whether user data installs Docker, AWS CLI, snapd, and supporting tools."
+  value       = true
+}
+
+output "uses_official_docker_repository" {
+  description = "Whether user data installs Docker Engine from Docker's official apt repository."
+  value       = true
+}
+
+output "uses_official_aws_cli_installer" {
+  description = "Whether user data installs AWS CLI v2 from the official AWS installer."
+  value       = true
+}
+
+output "writes_app_deploy_script" {
+  description = "Whether user data writes the status page container deploy script."
+  value       = true
+}
+
+output "writes_app_systemd_service" {
+  description = "Whether user data writes the status page container systemd service."
+  value       = true
+}
+
+output "app_secret_access_enabled" {
+  description = "Whether the EC2 role can read the Rails runtime app secret."
+  value       = var.create_instance_profile
+}
+
+output "writes_temporary_smoke_service" {
+  description = "Whether user data writes the temporary smoke service."
+  value       = false
+}
+
+output "cloudwatch_agent_enabled" {
+  description = "Whether CloudWatch Agent log shipping is enabled."
+  value       = var.create_instance_profile && var.enable_cloudwatch_agent
+}
+
+output "cloudwatch_log_group_name" {
+  description = "CloudWatch Logs group used by the optional CloudWatch Agent."
+  value       = var.enable_cloudwatch_agent ? aws_cloudwatch_log_group.app[0].name : null
+}

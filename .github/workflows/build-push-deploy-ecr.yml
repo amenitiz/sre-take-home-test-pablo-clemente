@@ -1,0 +1,165 @@
+name: Build, Push, and Deploy ECR Image
+
+on:
+  push:
+    branches:
+      - challenge
+  workflow_dispatch:
+
+concurrency:
+  group: status-page-challenge-app-deploy
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+
+env:
+  AWS_ACCOUNT_ID: "376129434003"
+  AWS_REGION: eu-west-3
+  ECR_REPOSITORY: status-page
+  EC2_NAME: status-page-challenge-app
+  ROLE_NAME: status-page-challenge-github-actions-role
+
+jobs:
+  test:
+    name: Test Rails app
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      RAILS_ENV: test
+      DATABASE_HOST: localhost
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: postgres
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version-file: status-page/.ruby-version
+          bundler-cache: true
+          working-directory: status-page
+
+      - name: Set up database
+        working-directory: status-page
+        run: bin/rails db:prepare
+
+      - name: Run tests
+        working-directory: status-page
+        run: bin/rails test
+
+  docker-build-smoke:
+    name: Docker build smoke
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build image without pushing
+        uses: docker/build-push-action@v6
+        with:
+          context: ./status-page
+          file: ./status-page/Dockerfile
+          push: false
+          tags: status-page:test-${{ github.sha }}
+
+  build-push-deploy:
+    name: Build, push, and deploy
+    runs-on: ubuntu-latest
+    needs: docker-build-smoke
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.ROLE_NAME }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Log in to ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push image
+        id: build
+        uses: docker/build-push-action@v6
+        with:
+          context: ./status-page
+          file: ./status-page/Dockerfile
+          push: true
+          tags: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+      - name: Deploy through SSM
+        shell: bash
+        env:
+          IMAGE_URI: ${{ steps.ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ github.sha }}
+        run: |
+          set -euo pipefail
+
+          INSTANCE_ID="$(aws ec2 describe-instances \
+            --filters \
+              "Name=tag:Name,Values=${EC2_NAME}" \
+              "Name=instance-state-name,Values=running" \
+            --query 'sort_by(Reservations[].Instances[], &LaunchTime)[-1].InstanceId' \
+            --output text)"
+
+          if [[ -z "$INSTANCE_ID" || "$INSTANCE_ID" == "None" ]]; then
+            echo "No running EC2 instance found for Name=${EC2_NAME}" >&2
+            exit 1
+          fi
+
+          SSM_PARAMETERS="$(jq -n --arg command "/opt/status-page/deploy.sh ${IMAGE_URI}" \
+            '{commands: [$command]}')"
+
+          COMMAND_ID="$(aws ssm send-command \
+            --instance-ids "$INSTANCE_ID" \
+            --document-name "AWS-RunShellScript" \
+            --comment "Deploy ${GITHUB_SHA}" \
+            --parameters "$SSM_PARAMETERS" \
+            --query 'Command.CommandId' \
+            --output text)"
+
+          set +e
+          aws ssm wait command-executed \
+            --command-id "$COMMAND_ID" \
+            --instance-id "$INSTANCE_ID"
+          WAIT_STATUS="$?"
+          set -e
+
+          aws ssm get-command-invocation \
+            --command-id "$COMMAND_ID" \
+            --instance-id "$INSTANCE_ID" \
+            --query '{Status:Status,ResponseCode:ResponseCode}' \
+            --output json
+
+          exit "$WAIT_STATUS"

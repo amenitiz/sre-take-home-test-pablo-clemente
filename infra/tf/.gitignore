@@ -1,8 +1,4 @@
-.DS_Store
-.omc/
-
-# Terraform local files
-**/.terraform/
+.terraform/
 *.tfstate
 *.tfstate.*
 *.tfplan

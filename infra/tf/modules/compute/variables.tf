@@ -1,0 +1,84 @@
+variable "name_prefix" {
+  description = "Prefix used for compute resource names."
+  type        = string
+}
+
+variable "aws_region" {
+  description = "AWS region used by the EC2 bootstrap."
+  type        = string
+}
+
+variable "subnet_id" {
+  description = "Public subnet ID where the EC2 instance is launched."
+  type        = string
+}
+
+variable "app_security_group_id" {
+  description = "Security group ID allowing ALB traffic to the app port."
+  type        = string
+}
+
+variable "target_group_arn" {
+  description = "ALB target group ARN where the instance is registered."
+  type        = string
+}
+
+variable "ecr_repository_name" {
+  description = "ECR repository name used by the EC2 bootstrap."
+  type        = string
+}
+
+variable "app_port" {
+  description = "Application port exposed by the Rails container."
+  type        = number
+}
+
+variable "instance_type" {
+  description = "EC2 instance type for the Ubuntu app host."
+  type        = string
+}
+
+variable "root_volume_size" {
+  description = "Root EBS volume size in GiB."
+  type        = number
+}
+
+variable "create_instance_profile" {
+  description = "Whether this module should create an EC2 IAM role and instance profile for SSM/ECR access."
+  type        = bool
+}
+
+variable "instance_profile_name" {
+  description = "Existing EC2 instance profile name to attach when create_instance_profile is false."
+  type        = string
+  default     = null
+}
+
+variable "app_secret_arn" {
+  description = "Secrets Manager ARN containing the Rails production runtime environment."
+  type        = string
+  default     = null
+}
+
+variable "enable_cloudwatch_agent" {
+  description = "Whether to install and configure the CloudWatch Agent. Requires create_instance_profile to be true."
+  type        = bool
+}
+
+variable "cloudwatch_log_group_name" {
+  description = "CloudWatch Logs group used by the optional CloudWatch Agent."
+  type        = string
+}
+
+variable "cloudwatch_log_retention_days" {
+  description = "Retention in days for the optional CloudWatch log group."
+  type        = number
+
+  validation {
+    condition = contains([
+      1, 3, 5, 7, 14, 30, 60, 90, 120, 150, 180,
+      365, 400, 545, 731, 1096, 1827, 2192, 2557, 2922, 3288, 3653,
+    ], var.cloudwatch_log_retention_days)
+    error_message = "CloudWatch log retention must be one of the values supported by AWS CloudWatch Logs."
+  }
+}
