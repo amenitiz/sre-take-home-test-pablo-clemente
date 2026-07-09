@@ -3,6 +3,11 @@ output "instance_id" {
   value       = aws_instance.this.id
 }
 
+output "instance_arn" {
+  description = "ARN of the Ubuntu EC2 instance."
+  value       = aws_instance.this.arn
+}
+
 output "public_ip" {
   description = "Public IP address of the Ubuntu EC2 smoke-test instance."
   value       = aws_instance.this.public_ip
@@ -40,6 +45,36 @@ output "created_instance_profile" {
 
 output "runs_instance_profile_bootstrap" {
   description = "Whether user data runs SSM/ECR bootstrap that requires an instance profile."
+  value       = var.create_instance_profile
+}
+
+output "runs_package_bootstrap" {
+  description = "Whether user data installs Docker, AWS CLI, snapd, and supporting tools."
+  value       = true
+}
+
+output "uses_official_docker_repository" {
+  description = "Whether user data installs Docker Engine from Docker's official apt repository."
+  value       = true
+}
+
+output "uses_official_aws_cli_installer" {
+  description = "Whether user data installs AWS CLI v2 from the official AWS installer."
+  value       = true
+}
+
+output "writes_app_deploy_script" {
+  description = "Whether user data writes the status page container deploy script."
+  value       = true
+}
+
+output "writes_app_systemd_service" {
+  description = "Whether user data writes the status page container systemd service."
+  value       = true
+}
+
+output "app_secret_access_enabled" {
+  description = "Whether the EC2 role can read the Rails runtime app secret."
   value       = var.create_instance_profile
 }
 

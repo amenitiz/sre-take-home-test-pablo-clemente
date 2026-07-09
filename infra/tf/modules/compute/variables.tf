@@ -54,6 +54,12 @@ variable "instance_profile_name" {
   default     = null
 }
 
+variable "app_secret_arn" {
+  description = "Secrets Manager ARN containing the Rails production runtime environment."
+  type        = string
+  default     = null
+}
+
 variable "db_probe_host" {
   description = "Database host used by the smoke service DB network probe."
   type        = string

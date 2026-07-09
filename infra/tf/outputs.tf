@@ -83,6 +83,16 @@ output "ecr_repository_arn" {
   value       = module.ecr.repository_arn
 }
 
+output "github_actions_role_arn" {
+  description = "IAM role ARN assumed by GitHub Actions through OIDC."
+  value       = module.github_oidc.role_arn
+}
+
+output "github_actions_oidc_subject" {
+  description = "GitHub OIDC subject allowed to assume the deployment role."
+  value       = module.github_oidc.trusted_subject
+}
+
 output "ec2_instance_id" {
   description = "ID of the Ubuntu EC2 smoke-test instance."
   value       = module.compute.instance_id
@@ -101,6 +111,11 @@ output "ec2_instance_profile_name" {
 output "ec2_created_instance_profile" {
   description = "Whether Terraform created the EC2 IAM role and instance profile."
   value       = module.compute.created_instance_profile
+}
+
+output "ec2_app_secret_access_enabled" {
+  description = "Whether the EC2 IAM role can read the Rails runtime app secret."
+  value       = module.compute.app_secret_access_enabled
 }
 
 output "rds_endpoint" {

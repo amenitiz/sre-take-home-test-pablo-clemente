@@ -58,6 +58,26 @@ resource "aws_iam_role_policy_attachment" "ecr_read_only" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
+resource "aws_iam_role_policy" "app_secret_read" {
+  count = var.create_instance_profile ? 1 : 0
+
+  name = "${var.name_prefix}-app-secret-read"
+  role = aws_iam_role.this[0].id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "secretsmanager:GetSecretValue",
+        ]
+        Resource = var.app_secret_arn
+      },
+    ]
+  })
+}
+
 resource "aws_iam_role_policy_attachment" "cloudwatch_agent" {
   count = var.create_instance_profile && var.enable_cloudwatch_agent ? 1 : 0
 
@@ -93,6 +113,7 @@ resource "aws_instance" "this" {
     aws_region                = var.aws_region
     ecr_repository_name       = var.ecr_repository_name
     create_instance_profile   = var.create_instance_profile
+    app_secret_arn            = var.app_secret_arn == null ? "" : var.app_secret_arn
     db_probe_host             = var.db_probe_host
     db_probe_port             = var.db_probe_port
     enable_cloudwatch_agent   = var.create_instance_profile && var.enable_cloudwatch_agent
