@@ -1,3 +1,5 @@
+mock_provider "aws" {}
+
 run "network_contract" {
   command = plan
 

@@ -67,3 +67,38 @@ output "app_target_group_arn" {
   description = "ARN of the app target group for future EC2 attachment."
   value       = module.network.app_target_group_arn
 }
+
+output "ecr_repository_name" {
+  description = "Name of the private ECR repository for the status page image."
+  value       = module.ecr.repository_name
+}
+
+output "ecr_repository_url" {
+  description = "URL of the private ECR repository used by GitHub Actions and EC2."
+  value       = module.ecr.repository_url
+}
+
+output "ecr_repository_arn" {
+  description = "ARN of the private ECR repository for IAM policies."
+  value       = module.ecr.repository_arn
+}
+
+output "ec2_instance_id" {
+  description = "ID of the Ubuntu EC2 smoke-test instance."
+  value       = module.compute.instance_id
+}
+
+output "ec2_public_ip" {
+  description = "Public IP address of the Ubuntu EC2 smoke-test instance."
+  value       = module.compute.public_ip
+}
+
+output "ec2_instance_profile_name" {
+  description = "IAM instance profile attached to the Ubuntu EC2 smoke-test instance."
+  value       = module.compute.instance_profile_name
+}
+
+output "ec2_created_instance_profile" {
+  description = "Whether Terraform created the EC2 IAM role and instance profile."
+  value       = module.compute.created_instance_profile
+}

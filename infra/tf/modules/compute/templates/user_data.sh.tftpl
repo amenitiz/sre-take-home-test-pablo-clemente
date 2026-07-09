@@ -1,0 +1,70 @@
+#!/bin/bash
+set -euxo pipefail
+
+export DEBIAN_FRONTEND=noninteractive
+
+cat >/usr/local/bin/status-page-smoke.py <<'PY'
+from http.server import BaseHTTPRequestHandler, HTTPServer
+
+
+class Handler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        if self.path == "/healthz":
+            self.send_response(200)
+            self.send_header("Content-Type", "application/json")
+            self.end_headers()
+            self.wfile.write(b'{"status":"ok"}')
+            return
+
+        self.send_response(200)
+        self.send_header("Content-Type", "text/plain")
+        self.end_headers()
+        self.wfile.write(b"status-page smoke server\n")
+
+    def log_message(self, format, *args):
+        return
+
+
+HTTPServer(("0.0.0.0", ${app_port}), Handler).serve_forever()
+PY
+
+cat >/etc/systemd/system/status-page-smoke.service <<'UNIT'
+[Unit]
+Description=Status Page temporary smoke server
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+ExecStart=/usr/bin/python3 /usr/local/bin/status-page-smoke.py
+Restart=always
+RestartSec=3
+User=root
+
+[Install]
+WantedBy=multi-user.target
+UNIT
+
+systemctl daemon-reload
+systemctl enable --now status-page-smoke.service
+
+%{ if create_instance_profile ~}
+apt-get update
+apt-get install -y docker.io awscli snapd
+
+systemctl enable --now docker
+systemctl enable --now snapd.socket
+snap wait system seed.loaded
+
+if ! snap list amazon-ssm-agent >/dev/null 2>&1; then
+  snap install amazon-ssm-agent --classic
+fi
+
+systemctl enable --now snap.amazon-ssm-agent.amazon-ssm-agent.service
+
+usermod -aG docker ubuntu
+
+aws ecr describe-repositories \
+  --repository-names "${ecr_repository_name}" \
+  --region "${aws_region}" \
+  >/var/log/status-page-ecr-check.log 2>&1 || true
+%{ endif ~}
